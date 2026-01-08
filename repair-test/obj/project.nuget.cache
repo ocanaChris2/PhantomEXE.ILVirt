@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "deC9ED4IHI8=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\fake_\\OneDrive\\Escritorio\\PhantomExe.ILVirt\\repair-test\\repair-test.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\fake_\\.nuget\\packages\\asmresolver\\5.4.0\\asmresolver.5.4.0.nupkg.sha512",
+    "C:\\Users\\fake_\\.nuget\\packages\\asmresolver.pe\\5.4.0\\asmresolver.pe.5.4.0.nupkg.sha512",
+    "C:\\Users\\fake_\\.nuget\\packages\\asmresolver.pe.file\\5.4.0\\asmresolver.pe.file.5.4.0.nupkg.sha512"
+  ],
+  "logs": []
+}

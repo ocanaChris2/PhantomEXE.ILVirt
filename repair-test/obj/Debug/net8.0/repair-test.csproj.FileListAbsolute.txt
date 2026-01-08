@@ -1,0 +1,5 @@
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\repair-test\obj\Debug\net8.0\repair-test.csproj.AssemblyReference.cache
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\repair-test\obj\Debug\net8.0\repair-test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\repair-test\obj\Debug\net8.0\repair-test.AssemblyInfoInputs.cache
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\repair-test\obj\Debug\net8.0\repair-test.AssemblyInfo.cs
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\repair-test\obj\Debug\net8.0\repair-test.csproj.CoreCompileInputs.cache
