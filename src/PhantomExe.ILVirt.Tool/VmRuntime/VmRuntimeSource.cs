@@ -97,10 +97,24 @@ namespace {rootNamespace}
             
             Console.WriteLine(""[DeriveKey] Found VmKeyHelper: "" + helperType.FullName);
             
-            // ✅ CRITICAL: Force static constructor to run before reading fields
-            Console.WriteLine(""[DeriveKey] Triggering static constructor..."");
-            RuntimeHelpers.RunClassConstructor(helperType.TypeHandle);
-            Console.WriteLine(""[DeriveKey] Static constructor triggered"");
+            // ✅ Get the static constructor method explicitly and invoke it
+            var cctor = helperType.GetMethod("".cctor"", 
+                System.Reflection.BindingFlags.Static | 
+                System.Reflection.BindingFlags.NonPublic);
+            
+            if (cctor != null)
+            {{
+                Console.WriteLine(""[DeriveKey] Explicitly calling static constructor..."");
+                cctor.Invoke(null, null);
+                Console.WriteLine(""[DeriveKey] Static constructor called successfully"");
+            }}
+            else
+            {{
+                // If static constructor doesn't exist, force type initialization
+                Console.WriteLine(""[DeriveKey] No static constructor found, forcing type initialization..."");
+                RuntimeHelpers.RunClassConstructor(helperType.TypeHandle);
+                Console.WriteLine(""[DeriveKey] Type initialization triggered"");
+            }}
             
             var partAField = helperType.GetField(""PartA"", 
                 System.Reflection.BindingFlags.Public | 
@@ -121,10 +135,15 @@ namespace {rootNamespace}
             Console.WriteLine(""[DeriveKey] PartA from VmKeyHelper: "" + partA.ToString(""X2""));
             Console.WriteLine(""[DeriveKey] PartB from VmKeyHelper: "" + partB.ToString(""X2""));
             
+            // ✅ FIXED: REVERSE THE TRANSFORMATION!
+            // PartA contains (k0 ^ 0x5A), so k0 = PartA ^ 0x5A
+            // PartB contains (k1 ^ 0xC3), so k1 = PartB ^ 0xC3
             byte k0 = (byte)(partA ^ 0x5A);
             byte k1 = (byte)(partB ^ 0xC3);
-            byte k2 = (byte)(ComputeMvidDerivedByte() ^ 0x9E);
-            byte k3 = (byte)(ExtractResourceKeyPart() ^ 0xD1);
+            
+            // Get k2 and k3 from resource (unchanged)
+            byte k2, k3;
+            ExtractResourceKeyParts(out k2, out k3);
             
             Console.WriteLine(""[DeriveKey] Final key components: k0="" + k0.ToString(""X2"") + 
                             "", k1="" + k1.ToString(""X2"") + 
@@ -134,15 +153,11 @@ namespace {rootNamespace}
             return new byte[] {{ k0, k1, k2, k3 }};
         }}
 
-        private static byte ComputeMvidDerivedByte()
+        private static void ExtractResourceKeyParts(out byte k2, out byte k3)
         {{
-            var mvid = typeof(VmRuntime).Module.ModuleVersionId;
-            var bytes = mvid.ToByteArray();
-            return (byte)(bytes[0] + bytes[1] + bytes[2] + bytes[3]);
-        }}
-
-        private static byte ExtractResourceKeyPart()
-        {{
+            k2 = 0x00;
+            k3 = 0x00;
+            
             var names = typeof(VmRuntime).Assembly.GetManifestResourceNames();
             
             string decoderName = null;
@@ -157,10 +172,26 @@ namespace {rootNamespace}
             
             if (decoderName == null)
             {{
-                return 0x00;
+                Console.WriteLine(""[ExtractResourceKeyParts] No decoder resource found"");
+                return;
             }}
             
-            return (byte)decoderName[decoderName.Length - 2];
+            Console.WriteLine(""[ExtractResourceKeyParts] Found decoder resource: "" + decoderName);
+            
+            // Format: PhantomExe.Decoder.{{char2}}{{char3}}
+            // Extract last two characters
+            if (decoderName.Length >= 2)
+            {{
+                var encodedChar2 = decoderName[decoderName.Length - 2];
+                var encodedChar3 = decoderName[decoderName.Length - 1];
+                
+                // Decode: resource stores (k2 ^ 0x9E) and (k3 ^ 0xD1)
+                k2 = (byte)(encodedChar2 ^ 0x9E);
+                k3 = (byte)(encodedChar3 ^ 0xD1);
+                
+                Console.WriteLine(""[ExtractResourceKeyParts] Decoded: k2="" + k2.ToString(""X2"") + 
+                    "", k3="" + k3.ToString(""X2""));
+            }}
         }}
 
         private static byte[] Decrypt(byte[] data, byte[] key)

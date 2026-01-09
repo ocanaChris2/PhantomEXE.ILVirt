@@ -18,10 +18,13 @@ namespace PhantomExe.ILVirt.Tool.KeyDerivation
     {
         public static void Emit(byte[] key, ModuleDefinition module)
         {
-            var k0 = (byte)(key[0] ^ 0x5A);
-            var k1 = (byte)(key[1] ^ 0xC3);
+            // IMPORTANT: key[0] and key[1] are already transformed by MethodVirtualizer
+            // They contain (k0 ^ 0x5A) and (k1 ^ 0xC3)
+            var partA = key[0];  // Already transformed: (k0 ^ 0x5A)
+            var partB = key[1];  // Already transformed: (k1 ^ 0xC3)
 
-            Console.WriteLine($"[KeyEmitter] Emitting key constants: PartA={k0:X2}, PartB={k1:X2}");
+            Console.WriteLine($"[KeyEmitter] Emitting key constants: PartA={partA:X2}, PartB={partB:X2}");
+            Console.WriteLine($"[KeyEmitter] Note: PartA = (k0 ^ 0x5A), PartB = (k1 ^ 0xC3)");
 
             var ns = module.TopLevelTypes.FirstOrDefault(t => t.Name != "<Module>")?.Namespace ?? "PhantomExe";
             
@@ -67,17 +70,17 @@ namespace PhantomExe.ILVirt.Tool.KeyDerivation
             var body = cctor.CilMethodBody!;
             body.Instructions.Clear();
             
-            // Set PartA = k0
-            body.Instructions.Add(new CilInstruction(CilOpCodes.Ldc_I4, (int)k0));
+            // Set PartA = transformed k0 (already transformed)
+            body.Instructions.Add(new CilInstruction(CilOpCodes.Ldc_I4, (int)partA));
             body.Instructions.Add(new CilInstruction(CilOpCodes.Stsfld, fieldA));
             
-            // Set PartB = k1
-            body.Instructions.Add(new CilInstruction(CilOpCodes.Ldc_I4, (int)k1));
+            // Set PartB = transformed k1 (already transformed)
+            body.Instructions.Add(new CilInstruction(CilOpCodes.Ldc_I4, (int)partB));
             body.Instructions.Add(new CilInstruction(CilOpCodes.Stsfld, fieldB));
             
             body.Instructions.Add(new CilInstruction(CilOpCodes.Ret));
 
-            Console.WriteLine($"[KeyEmitter] Static constructor updated with PartA={k0:X2}, PartB={k1:X2}");
+            Console.WriteLine($"[KeyEmitter] Static constructor updated with PartA={partA:X2}, PartB={partB:X2}");
         }
     }
 }

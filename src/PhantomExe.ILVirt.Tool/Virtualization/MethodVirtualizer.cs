@@ -1,3 +1,4 @@
+// src/PhantomExe.ILVirt.Tool/Virtualization/MethodVirtualizer.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +17,7 @@ namespace PhantomExe.ILVirt.Tool.Virtualization
 {
     public static class MethodVirtualizer
     {
-        public static void Virtualize(
+         public static void Virtualize(
             MethodDefinition method,
             AssemblyDefinition assembly,
             string rootNamespace)
@@ -25,6 +26,8 @@ namespace PhantomExe.ILVirt.Tool.Virtualization
             var key = KeyDerivation.KeyGenerator.GenerateKey(method);
 
             // [DEBUG] Key and bytecode dump
+            Console.WriteLine($"[DEBUG] Generated {bytecode.Length} bytes");
+            Console.WriteLine($"[DEBUG] Bytecode hex: {BitConverter.ToString(bytecode)}");
             Console.WriteLine($"[DEBUG] Encryption key: {BitConverter.ToString(key)}");
             Console.WriteLine($"[DEBUG] Bytecode before encryption: {BitConverter.ToString(bytecode)}");
             
@@ -44,8 +47,15 @@ namespace PhantomExe.ILVirt.Tool.Virtualization
             
             assembly.ManifestModule.Resources.Add(resource);
 
-            KeyDerivation.KeyConstantsEmitter.Emit(key, method.DeclaringType!.Module!);
-            KeyDerivation.ResourceKeyEncoder.Encode(key[3], assembly);
+            // Store key parts (transform k0, k1 for obfuscation)
+            var transformedKey = new byte[4];
+            transformedKey[0] = (byte)(key[0] ^ 0x5A);  // k0 transformed
+            transformedKey[1] = (byte)(key[1] ^ 0xC3);  // k1 transformed
+            transformedKey[2] = key[2];                 // k2 unchanged
+            transformedKey[3] = key[3];                 // k3 unchanged
+            
+            KeyDerivation.KeyConstantsEmitter.Emit(transformedKey, method.DeclaringType!.Module!);
+            KeyDerivation.ResourceKeyEncoder.Encode(key[2], key[3], assembly);
 
             ReplaceMethodBody(method, resourceName, rootNamespace);
         }

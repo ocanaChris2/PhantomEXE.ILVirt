@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PhantomExe.ILVirt.Tool")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+073d9bcdcd766b0fa157d677a610e0308ca6238b")]
 [assembly: System.Reflection.AssemblyProductAttribute("PhantomExe.ILVirt.Tool")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PhantomExe.ILVirt.Tool")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

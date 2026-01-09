@@ -1,3 +1,4 @@
+// src/PhantomExe.ILVirt.Tool/VmRuntime/VmRuntimeInjector.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +31,7 @@ namespace PhantomExe.ILVirt.Tool.VmRuntime
             InjectVmRuntime();
         }
 
-      private void EnsureVmKeyHelperExists()
+    private void EnsureVmKeyHelperExists()
 {
     var module = _assembly.ManifestModule;
     var ns = _rootNamespace;
@@ -58,21 +59,27 @@ namespace PhantomExe.ILVirt.Tool.VmRuntime
 
     var fieldSig = new FieldSignature(module.CorLibTypeFactory.Byte);
     
-    // ✅ Create static fields (not const)
+    // ✅ Create static readonly fields with initial values
+    // Using HasDefault flag and setting Constant for proper initialization
     var fieldA = new FieldDefinition(
         "PartA",
-        FieldAttributes.Public | FieldAttributes.Static,
+        FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly,
         fieldSig);
+    
+    // Set initial value to 0 (will be updated by KeyConstantsEmitter)
+    fieldA.Constant = new Constant(ElementType.U1, new DataBlobSignature(new byte[] { 0 }));
     
     var fieldB = new FieldDefinition(
         "PartB",
-        FieldAttributes.Public | FieldAttributes.Static,
+        FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly,
         fieldSig);
+    
+    fieldB.Constant = new Constant(ElementType.U1, new DataBlobSignature(new byte[] { 0 }));
     
     helperType.Fields.Add(fieldA);
     helperType.Fields.Add(fieldB);
 
-    // ✅ Add a static constructor to initialize the values
+    // ✅ Add a static constructor that initializes the values
     var cctor = new MethodDefinition(
         ".cctor",
         MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.SpecialName | MethodAttributes.HideBySig,

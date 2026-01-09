@@ -41,6 +41,7 @@ C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomExe.ILVirt.Tool.AssemblyInfoInputs.cache
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomExe.ILVirt.Tool.AssemblyInfo.cs
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomExe.ILVirt.Tool.csproj.CoreCompileInputs.cache
+C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomExe.ILVirt.Tool.sourcelink.json
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomE.9B5DACF6.Up2Date
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\PhantomExe.ILVirt.Tool.dll
 C:\Users\fake_\OneDrive\Escritorio\PhantomExe.ILVirt\src\PhantomExe.ILVirt.Tool\obj\Debug\net8.0\refint\PhantomExe.ILVirt.Tool.dll
