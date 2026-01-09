@@ -46,9 +46,6 @@ graph TB
         O --> P[Bytecode Interpreter]
         P --> Q[Original Logic]
     end
-    
-    D --> E
-    F --> G
 ```
 
 ### Core Components
@@ -84,6 +81,7 @@ graph TD
 ### Component Architecture
 
 #### 1. Assembly Loader (`AssemblyLoader.cs`)
+
 **Purpose**: Loads and inspects .NET assemblies using AsmResolver.
 
 **Key Responsibilities**:
@@ -94,6 +92,7 @@ graph TD
 **Dependencies**: AsmResolver 5.5.0
 
 #### 2. Method Virtualizer (`MethodVirtualizer.cs`)
+
 **Purpose**: Core virtualization engine that transforms CIL to bytecode.
 
 **Key Responsibilities**:
@@ -108,6 +107,7 @@ graph TD
 - `ReplaceMethodBody()`: Replace CIL with VM call
 
 #### 3. Bytecode Format (`BytecodeFormat.cs`)
+
 **Purpose**: Defines the custom bytecode instruction set.
 
 **Instruction Categories**:
@@ -121,6 +121,7 @@ graph TD
 #### 4. Key Management System
 
 ##### Key Generator (`KeyGenerator.cs`)
+
 ```mermaid
 graph LR
     A[Method Metadata] --> B[Token + Type Hash]
@@ -129,20 +130,22 @@ graph LR
     D --> E[4-Byte Key]
     
     subgraph "Key Components"
-        E --> F[k0: hash[0]^hash[8]^0x5A]
-        E --> G[k1: hash[4]^hash[12]^0xC3]
-        E --> H[k2: hash[16]^nameLength]
-        E --> I[k3: hash[24]^paramCount]
+        E --> F["k0: hash[0]⊕hash[8]⊕0x5A"]
+        E --> G["k1: hash[4]⊕hash[12]⊕0xC3"]
+        E --> H["k2: hash[16]⊕nameLength"]
+        E --> I["k3: hash[24]⊕paramCount"]
     end
 ```
 
 ##### Key Storage Components
-- **KeyConstantEmitter**: Embeds k0,k1 (transformed) in `VmKeyHelper` static fields
-- **ResourceKeyEncoder**: Stores k2,k3 in resource names using XOR encoding
+
+- **KeyConstantEmitter**: Embeds k0, k1 (transformed) in `VmKeyHelper` static fields
+- **ResourceKeyEncoder**: Stores k2, k3 in resource names using XOR encoding
 
 #### 5. VM Runtime System
 
 ##### VmRuntimeInjector (`VmRuntimeInjector.cs`)
+
 **Purpose**: Injects VM runtime classes into target assembly.
 
 **Process**:
@@ -153,6 +156,7 @@ graph LR
 5. Fix type references and remove temporary assembly reference
 
 ##### VmRuntimeSource (`VmRuntimeSource.cs`)
+
 **Purpose**: Contains template source code for VM runtime.
 
 **Key Classes**:
@@ -161,16 +165,18 @@ graph LR
 - **VmKeyHelper**: Static class for key storage (created separately)
 
 #### 6. Resource Management
+
 **Purpose**: Store encrypted bytecode and key components.
 
 **Resource Types**:
+
 1. **Bytecode Resources**: `PhantomExe.BC.{MetadataToken:X8}`
    - Contains encrypted method bytecode
    - XOR encrypted with 4-byte key
 
 2. **Decoder Resources**: `PhantomExe.Decoder.{char2}{char3}`
    - Contains encoded k2 and k3 components
-   - `char2 = k2 ^ 0x9E`, `char3 = k3 ^ 0xD1`
+   - `char2 = k2 ⊕ 0x9E`, `char3 = k3 ⊕ 0xD1`
 
 ### Data Flow
 
@@ -273,8 +279,8 @@ public static byte[] GenerateKey(MethodDefinition method)
     // 4. Extract 4-byte key with transformations
     return new byte[]
     {
-        (byte)(hash[0] ^ hash[8] ^ 0x5A),    // k0
-        (byte)(hash[4] ^ hash[12] ^ 0xC3),   // k1
+        (byte)(hash[0] ^ hash[8] ^ 0x5A),              // k0
+        (byte)(hash[4] ^ hash[12] ^ 0xC3),             // k1
         (byte)(hash[16] ^ (byte)method.Name!.Length),  // k2
         (byte)(hash[24] ^ (byte)method.Parameters.Count) // k3
     };
@@ -285,10 +291,10 @@ public static byte[] GenerateKey(MethodDefinition method)
 
 | Component | Storage Location | Transformation | Purpose |
 |-----------|------------------|----------------|---------|
-| **k0** | `VmKeyHelper.PartA` | `k0 ^ 0x5A` | First key byte (transformed) |
-| **k1** | `VmKeyHelper.PartB` | `k1 ^ 0xC3` | Second key byte (transformed) |
-| **k2** | Resource name char2 | `k2 ^ 0x9E` | Third key byte (encoded) |
-| **k3** | Resource name char3 | `k3 ^ 0xD1` | Fourth key byte (encoded) |
+| **k0** | `VmKeyHelper.PartA` | `k0 ⊕ 0x5A` | First key byte (transformed) |
+| **k1** | `VmKeyHelper.PartB` | `k1 ⊕ 0xC3` | Second key byte (transformed) |
+| **k2** | Resource name char2 | `k2 ⊕ 0x9E` | Third key byte (encoded) |
+| **k3** | Resource name char3 | `k3 ⊕ 0xD1` | Fourth key byte (encoded) |
 | **Bytecode** | Embedded resource | XOR with key | Encrypted method implementation |
 
 #### Key Reconstruction at Runtime
@@ -297,8 +303,8 @@ public static byte[] GenerateKey(MethodDefinition method)
 private static byte[] DeriveKey()
 {
     // 1. Get transformed parts from VmKeyHelper
-    byte partA = VmKeyHelper.PartA;  // Contains (k0 ^ 0x5A)
-    byte partB = VmKeyHelper.PartB;  // Contains (k1 ^ 0xC3)
+    byte partA = VmKeyHelper.PartA;  // Contains (k0 ⊕ 0x5A)
+    byte partB = VmKeyHelper.PartB;  // Contains (k1 ⊕ 0xC3)
     
     // 2. Reverse transformations
     byte k0 = (byte)(partA ^ 0x5A);
@@ -317,17 +323,20 @@ private static byte[] DeriveKey()
 #### Instruction Encoding
 
 ##### Basic Structure
+
 ```
 [OPCODE][OPERAND...]
 ```
 
 ##### Operand Types
+
 - **No operand**: `OP_NOP`, `OP_ADD`, `OP_SUB`, etc.
 - **1-byte operand**: `OP_LDARG`, `OP_LDLOC`, `OP_STLOC` (index)
 - **4-byte operand**: `OP_LDC_I4` (int32), branches (offset)
 - **Variable-length**: `OP_LDC_STR` (2-byte length + UTF-8 data)
 
 #### Branch Target Resolution
+
 ```csharp
 // During compilation: Build offset map
 var offsetMap = new Dictionary<int, int>();
@@ -384,6 +393,7 @@ graph TB
 #### Interpreter Implementation Details
 
 ##### Stack Management
+
 ```csharp
 public static object Execute(byte[] bytecode, object[] args)
 {
@@ -419,7 +429,9 @@ public static object Execute(byte[] bytecode, object[] args)
 ```
 
 #### Type Handling
+
 The interpreter performs runtime type checking and operations:
+
 - **Integers**: `int` and `long` support
 - **Floating-point**: `float` and `double` (partial)
 - **Strings**: UTF-8 encoded
@@ -427,13 +439,14 @@ The interpreter performs runtime type checking and operations:
 - **Objects**: Reference type support via boxing
 
 #### Memory Management
+
 - **Stack**: Unlimited depth (limited by .NET Stack<T>)
 - **Locals**: Fixed 16 slots (expandable by modification)
 - **Arguments**: Passed as object array from caller
 
-### Security Considerations
+## Security Considerations
 
-#### Strengths
+### Strengths
 
 1. **Method-Specific Encryption**
    - Each method has unique encryption key
@@ -452,7 +465,7 @@ The interpreter performs runtime type checking and operations:
    - Bytecode never decrypted on disk
    - Decryption occurs in memory during execution
 
-#### Weaknesses
+### Weaknesses
 
 1. **XOR Encryption**
    - Cryptographically weak
@@ -460,4 +473,64 @@ The interpreter performs runtime type checking and operations:
 
 2. **Predictable Resource Names**
    - Bytecode resources: `PhantomExe.BC.{Token:X8}`
-   - Decoder resources: `PhantomExe.D
+   - Decoder resources: `PhantomExe.Decoder.{char2}{char3}`
+   - Pattern can be easily identified
+
+3. **Static Key Storage**
+   - Key components stored in static fields
+   - Can be extracted via memory dumps
+
+4. **Limited Bytecode Coverage**
+   - Not all CIL instructions supported
+   - Complex methods may fail virtualization
+
+5. **VM Detection**
+   - VM runtime classes are visible in assembly
+   - Predictable naming patterns aid detection
+
+## Usage
+
+### Command-Line Interface
+
+```bash
+# Interactive mode
+PhantomExe.ILVirt.Tool.exe <input.dll>
+
+# Auto mode (first type, all methods)
+PhantomExe.ILVirt.Tool.exe <input.dll> --auto
+
+# Specify output path
+PhantomExe.ILVirt.Tool.exe <input.dll> --output <output.dll>
+```
+
+### Interactive Mode Workflow
+
+1. Select target type from list
+2. Select methods to virtualize (multiple selection supported)
+3. Tool processes selected methods
+4. Protected assembly written to output
+
+### Auto Mode
+
+Automatically selects:
+- First type in assembly
+- All virtualizable methods in that type
+- Ideal for batch processing
+
+## Limitations
+
+1. **Instruction Set**: Limited subset of CIL instructions supported
+2. **Exception Handling**: Try-catch blocks not fully supported
+3. **Generic Methods**: Limited support for generic method virtualization
+4. **Performance**: Interpreted execution is slower than native CIL
+5. **Debugging**: Virtualized methods harder to debug
+
+## Dependencies
+
+- **AsmResolver** 5.5.0: Assembly manipulation
+- **Microsoft.CodeAnalysis.CSharp**: Roslyn compiler for VM injection
+- **.NET 6.0+**: Target framework
+
+## License
+
+Documentation for PhantomExe.ILVirt.Tool - refer to project license for usage terms.
